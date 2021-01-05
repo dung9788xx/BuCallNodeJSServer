@@ -12,7 +12,7 @@ var app = http.createServer(function(req, res) {
 
 var io = socketIO.listen(app);
 io.sockets.on('connection', function(socket) {
-  console.log('commeaadacyed');
+  console.log('Have connectto server');
   // convenience function to log server messages on the client
   function log() {
     var array = ['Message from server:'];
@@ -28,12 +28,13 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('create or join', function(room) {
     log('Received request to create or join room ' + room);
-
+    console.log("Rom param"+room);
     var clientsInRoom = io.sockets.adapter.rooms[room];
     var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
     log('Room ' + room + ' now has ' + numClients + ' client(s)');
 
     if (numClients === 0) {
+      console.log("creating room");
       socket.join(room);
       log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, socket.id);
@@ -44,9 +45,12 @@ io.sockets.on('connection', function(socket) {
       socket.join(room);
       socket.emit('joined', room, socket.id);
       io.sockets.in(room).emit('ready');
+      console.log("joinning room");
+
     } else { // max two clients
       socket.emit('full', room);
     }
+    console.log('Total  room :'+JSON.stringify(io.sockets.adapter.rooms));
   });
 
   socket.on('ipaddr', function() {
@@ -63,5 +67,8 @@ io.sockets.on('connection', function(socket) {
   socket.on('bye', function(){
     console.log('received bye');
   });
-
+  socket.on('disconnect',function () {
+      console.log("User disconnected"+socket.id);
+    console.log('Total  room :'+JSON.stringify(io.sockets.adapter.rooms));
+  });
 });
