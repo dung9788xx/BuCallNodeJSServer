@@ -12,7 +12,7 @@ var app = http.createServer(function(req, res) {
 
 var io = socketIO.listen(app);
 io.sockets.on('connection', function(socket) {
-  console.log('commecyed');
+  console.log('commeaadacyed');
   // convenience function to log server messages on the client
   function log() {
     var array = ['Message from server:'];
