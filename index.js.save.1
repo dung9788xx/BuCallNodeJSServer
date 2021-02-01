@@ -23,19 +23,17 @@ io.sockets.on('connection', function (socket) {
 console.log("CallQueue : " + JSON.stringify(callingQueue));
 
         findPater();
-console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
+
     });
     socket.on('leftCallQueue', function () {
         delete callingQueue[socket.id];
 console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
     });
     socket.on('leftRoom', function (roomId) {
-
         socket.to(roomId).emit('buddyLeft');
         leaveAllUserInRoom(socket.id, LEFT_ROOM);
         callingQueue[socket.id] = {gender: ""};
-	console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
-//		findPater();
+
 	console.log("After budy : " + JSON.stringify(callingQueue));
     });
     socket.on('message', function (message) {
@@ -85,7 +83,7 @@ console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
 console.log("Client after disconnect: " + JSON.stringify(clientList));
     })
 socket.on("error", function(){
-console.log("errrrrrrorrr");
+console.log("errrrrrrorrr");		
 });
     function getRoomsByUser(id) {
         let usersRooms = [];
@@ -108,7 +106,6 @@ console.log("errrrrrrorrr");
                 let sockets = rooms[room].sockets;
                 if (id in sockets && id != room) {
                     for (let s in sockets) {
-                        io.sockets.connected[s].emit("buddyLeft")
                         io.sockets.connected[s].leave(room);
                         if (reason == LEFT_ROOM) {
                             callingQueue[s] = {status: ""};
