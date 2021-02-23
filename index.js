@@ -4,7 +4,7 @@ var os = require('os');
 var nodeStatic = require('node-static');
 var http = require('http');
 var socketIO = require('socket.io');
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3000;
 
 var fileServer = new (nodeStatic.Server)();
 var app = http.createServer(function (req, res) {
@@ -17,26 +17,26 @@ var io = socketIO.listen(app);
 io.sockets.on('connection', function (socket) {
     // convenience function to log server messages on the client
     clientList[socket.id] = {status: ""};
-    console.log("Client : " + JSON.stringify(clientList));
+//    console.log("Client : " + JSON.stringify(clientList));
     socket.on('joinCallQueue', function () {
         callingQueue[socket.id] = {gender: ""};
 console.log("CallQueue : " + JSON.stringify(callingQueue));
 
         findPater();
-console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
+//console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
     });
     socket.on('leftCallQueue', function () {
         delete callingQueue[socket.id];
-console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
+//console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
     });
     socket.on('leftRoom', function (roomId) {
 
         socket.to(roomId).emit('buddyLeft');
         leaveAllUserInRoom(socket.id, LEFT_ROOM);
         callingQueue[socket.id] = {gender: ""};
-	console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
+//	console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
 //		findPater();
-	console.log("After budy : " + JSON.stringify(callingQueue));
+//	console.log("After budy : " + JSON.stringify(callingQueue));
     });
     socket.on('message', function (message) {
         socket.to(message.roomId).emit('message', message);
@@ -65,7 +65,9 @@ console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
 
         delete callingQueue[callingId];
         delete callingQueue[joiningId];
-	console.log("done merge client");
+        console.log("Rooms after merge:"+JSON.stringify(io.sockets.adapter.rooms));
+
+        console.log("done merge client");
     }
 
     socket.on('ipaddr', function () {
@@ -94,7 +96,7 @@ console.log("errrrrrrorrr");
         for (let room in rooms) {
             if (rooms.hasOwnProperty(room)) {
                 let sockets = rooms[room].sockets;
-                if (id in sockets && id != room)
+                if (id in sockets && id !== room)
                     usersRooms.push(room);
             }
         }
@@ -103,14 +105,16 @@ console.log("errrrrrrorrr");
 
     function leaveAllUserInRoom(id, reason) {
         let rooms = io.sockets.adapter.rooms;
+console.log("Rooms:"+JSON.stringify(rooms));
         for (let room in rooms) {
             if (rooms.hasOwnProperty(room)) {
                 let sockets = rooms[room].sockets;
-                if (id in sockets && id != room) {
+                if (id in sockets) {
                     for (let s in sockets) {
                         io.sockets.connected[s].emit("buddyLeft")
+			console.log("call buddy left");
                         io.sockets.connected[s].leave(room);
-                        if (reason == LEFT_ROOM) {
+                        if (reason === LEFT_ROOM) {
                             callingQueue[s] = {status: ""};
                         }
                     }
