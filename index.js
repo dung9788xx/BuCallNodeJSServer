@@ -4,12 +4,48 @@ var os = require('os');
 var nodeStatic = require('node-static');
 var http = require('http');
 var socketIO = require('socket.io');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 80;
 
 var fileServer = new (nodeStatic.Server)();
 var app = http.createServer(function (req, res) {
     fileServer.serve(req, res);
 }).listen(port);
+
+const express = require('express');
+const appApi = express();
+appApi.listen(3001, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+})
+appApi.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+appApi.use('/users', function (request,res, next) {
+    console.log(request.query);
+    if ( request.query.id){
+        next();
+    }else
+    res.send('Invalid param');
+});
+appApi.get('/users', function (req, res) {
+    res.send("geet user")
+});
+var mysql = require('mysql');
+var con = mysql.createConnection({
+    host: "127.0.0.1",
+    user: "root",
+    password: "example",
+    database: 'dungdemo'
+});
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+    con.query("select * from users", function (err, result) {
+        if (err) throw err;
+        console.log("Result: " + JSON.stringify(result));
+    });
+});
+
+
 var clientList = {};
 var callingQueue = {};
 var totalRoom = 0;
@@ -17,7 +53,7 @@ var io = socketIO.listen(app);
 io.sockets.on('connection', function (socket) {
     // convenience function to log server messages on the client
     clientList[socket.id] = {status: ""};
-//    console.log("Client : " + JSON.stringify(clientList));
+   console.log("Client : " + JSON.stringify(clientList));
     socket.on('joinCallQueue', function () {
         callingQueue[socket.id] = {gender: ""};
 console.log("CallQueue : " + JSON.stringify(callingQueue));
@@ -112,7 +148,6 @@ console.log("Rooms:"+JSON.stringify(rooms));
                 if (id in sockets) {
                     for (let s in sockets) {
                         io.sockets.connected[s].emit("buddyLeft")
-			console.log("call buddy left");
                         io.sockets.connected[s].leave(room);
                         if (reason === LEFT_ROOM) {
                             callingQueue[s] = {status: ""};
