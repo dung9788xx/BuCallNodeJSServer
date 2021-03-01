@@ -4,7 +4,7 @@ var os = require('os');
 var nodeStatic = require('node-static');
 var http = require('http');
 var socketIO = require('socket.io');
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 3000;
 
 var fileServer = new (nodeStatic.Server)();
 var app = http.createServer(function (req, res) {
@@ -13,37 +13,55 @@ var app = http.createServer(function (req, res) {
 
 const express = require('express');
 const appApi = express();
+const router = express.Router();
+ var passwordSecurity=require("./password");
+
 appApi.listen(3001, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
-appApi.get('/', (req, res) => {
+router.get('/', (req, res) => {
     res.send('Hello World!')
 })
-appApi.use('/users', function (request,res, next) {
-    console.log(request.query);
-    if ( request.query.id){
+router.use('/users', function (request,res, next) {
         next();
-    }else
-    res.send('Invalid param');
 });
-appApi.get('/users', function (req, res) {
-    res.send("geet user")
+router.post('/users/login', function (req, res, next) {
+
+    res.send("get user");
 });
-var mysql = require('mysql');
-var con = mysql.createConnection({
-    host: "127.0.0.1",
-    user: "root",
-    password: "example",
-    database: 'dungdemo'
-});
-con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    con.query("select * from users", function (err, result) {
-        if (err) throw err;
-        console.log("Result: " + JSON.stringify(result));
-    });
-});
+appApi.use(express.json())
+appApi.use(express.urlencoded({
+    extended: true
+}))
+appApi.use( router);
+
+var UserDAO = require('./DAO/UserDAO');
+UserDAO.login("admin","admin").then(function (result) {
+    console.log("login:"+result);
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 var clientList = {};
