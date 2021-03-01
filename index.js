@@ -25,9 +25,18 @@ router.get('/', (req, res) => {
 router.use('/users', function (request,res, next) {
         next();
 });
-router.post('/users/login', function (req, res, next) {
+var UserDAO = require('./Services/UserService');
+router.get('/users/login', function (req, res, next) {
 
-    res.send("get user");
+    UserDAO.login("admin","admin",function (result) {
+        if(result.data){
+            res.send("get user:"+JSON.stringify(result));
+        }else{
+            res.send("fail");
+
+        }
+    });
+
 });
 appApi.use(express.json())
 appApi.use(express.urlencoded({
@@ -35,10 +44,7 @@ appApi.use(express.urlencoded({
 }))
 appApi.use( router);
 
-var UserDAO = require('./DAO/UserDAO');
-UserDAO.login("admin","admin").then(function (result) {
-    console.log("login:"+result);
-})
+
 
 
 

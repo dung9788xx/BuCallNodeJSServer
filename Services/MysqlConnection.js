@@ -9,10 +9,10 @@ var con = mysql.createConnection({
 con.connect(function(err) {
     if (err) throw err;
 });
-async function query(query) {
- await  con.query(query, (err, result)=> {
-        if (err) return  false;
-        return result;
+ function query(query,onSuccess) {
+    con.query(query, (err, result)=> {
+        if (err) return  onSuccess({error: err });
+        return onSuccess({data: result});
     });
 }
 module.exports = {
