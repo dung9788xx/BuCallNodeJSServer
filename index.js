@@ -13,10 +13,14 @@ var app = http.createServer(function (req, res) {
 
 const express = require('express');
 const appApi = express();
-const router = express.Router();
+// appApi.use(function (req, res, next) {
+//     console.log('Time:', Date.now())
+//     next()
+// })
 var passwordSecurity=require("./password");
 global.Validate = require('./Validate/RequestValidate');
 global.Response = require('./Services/Response');
+global.ApiAuthMiddleware= require('./Middleware/ApiAuthMiddleware')
 let UserRouter = require('./Routers/UserRouter')
 appApi.listen(3001, () => {
     console.log(`Example app listening at http://localhost:${port}`)
