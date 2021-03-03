@@ -14,38 +14,18 @@ var app = http.createServer(function (req, res) {
 const express = require('express');
 const appApi = express();
 const router = express.Router();
- var passwordSecurity=require("./password");
-
+var passwordSecurity=require("./password");
+global.Validate = require('./Validate/RequestValidate');
+global.Response = require('./Services/Response');
+let UserRouter = require('./Routers/UserRouter')
 appApi.listen(3001, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
-router.get('/', (req, res) => {
-    res.send('Hello World!')
-})
-router.use('/users', function (request,res, next) {
-        next();
-});
-var UserDAO = require('./Services/UserService');
-var Validate = require('./Validate/RequestValidate');
-console.log(Validate.validate({username:'aa',password:1},[{username:Validate.NUMBER}])
-)
-router.post('/users/login', function (req, res, next) {
-    console.log(Validate.validate(req.body,{username: Validate.STRING, password: Validate.STRING}));
-    UserDAO.login(req.body.username,req.body.password,function (result) {
-        if(result){
-            res.send("get user:"+JSON.stringify(result));
-        }else{
-            res.send("fail");
-
-        }
-    });
-
-});
 appApi.use(express.json())
 appApi.use(express.urlencoded({
     extended: true
 }))
-appApi.use( router);
+appApi.use( UserRouter);
 
 
 
