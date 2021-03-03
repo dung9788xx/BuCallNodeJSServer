@@ -26,10 +26,13 @@ router.use('/users', function (request,res, next) {
         next();
 });
 var UserDAO = require('./Services/UserService');
-router.get('/users/login', function (req, res, next) {
-
-    UserDAO.login("admin","admin",function (result) {
-        if(result.data){
+var Validate = require('./Validate/RequestValidate');
+console.log(Validate.validate({username:'aa',password:1},[{username:Validate.NUMBER}])
+)
+router.post('/users/login', function (req, res, next) {
+    console.log(Validate.validate(req.body,{username: Validate.STRING, password: Validate.STRING}));
+    UserDAO.login(req.body.username,req.body.password,function (result) {
+        if(result){
             res.send("get user:"+JSON.stringify(result));
         }else{
             res.send("fail");

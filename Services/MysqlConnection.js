@@ -9,8 +9,8 @@ var con = mysql.createConnection({
 con.connect(function(err) {
     if (err) throw err;
 });
- function query(query,onSuccess) {
-    con.query(query, (err, result)=> {
+ function query(query,params,onSuccess) {
+    con.query(query, params,(err, result)=> {
         if (err) return  onSuccess({error: err });
         return onSuccess({data: result});
     });
