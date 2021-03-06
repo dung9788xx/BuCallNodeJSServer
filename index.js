@@ -14,7 +14,7 @@ var app = http.createServer(function (req, res) {
 const express = require('express');
 const appApi = express();
 const router = express.Router();
- var passwordSecurity=require("./password");
+var passwordSecurity=require("./password");
 
 appApi.listen(3001, () => {
     console.log(`Example app listening at http://localhost:${port}`)
@@ -27,16 +27,13 @@ router.use('/users', function (request,res, next) {
 });
 var UserDAO = require('./Services/UserService');
 router.get('/users/login', function (req, res, next) {
-
     UserDAO.login("admin","admin",function (result) {
         if(result.data){
             res.send("get user:"+JSON.stringify(result));
         }else{
             res.send("fail");
-
         }
     });
-
 });
 appApi.use(express.json())
 appApi.use(express.urlencoded({
@@ -94,24 +91,21 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         socket.to(roomId).emit('buddyLeft');
         leaveAllUserInRoom(socket.id, LEFT_ROOM);
         callingQueue[socket.id] = {gender: ""};
-//	console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
-//		findPater();
-//	console.log("After budy : " + JSON.stringify(callingQueue));
     });
     socket.on('message', function (message) {
         socket.to(message.roomId).emit('message', message);
     });
 
     function findPater() {
-        var callingId = getCallingClient();
-        var joiningId = getJoiningClient();
+        let callingId = getCallingClient();
+        let joiningId = getJoiningClient();
         if (typeof callingId === "undefined" || typeof joiningId === "undefined") {
             socket.emit("noPartnerFound");
             return;
         }
-        var callingSocket = io.sockets.connected[callingId];
-        var joiningSocket = io.sockets.connected[joiningId];
-        var roomId = ++totalRoom;
+        let callingSocket = io.sockets.connected[callingId];
+        let joiningSocket = io.sockets.connected[joiningId];
+        let roomId = ++totalRoom;
         callingSocket.join("room" + roomId);
         joiningSocket.join("room" + roomId);
         callingSocket.emit("joined", "room" + roomId,function(t){
@@ -140,6 +134,10 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
             });
         }
     });
+    socket.on("disconnecting", function () {
+        console.log("Roomdisconnected:"+getRoomsByUser(socket.id));
+        socket.to(getRoomsByUser(socket.id)).emit('buddyLeft',true);
+    })
     socket.on("disconnect", function () {
         delete clientList[socket.id];
         delete callingQueue[socket.id];
