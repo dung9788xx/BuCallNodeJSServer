@@ -186,7 +186,7 @@ console.log("Rooms:"+JSON.stringify(rooms));
                 if (id in sockets) {
                     for (let s in sockets) {
                         io.sockets.connected[s].leave(room);
-                        if (reason === LEFT_ROOM) {
+                        if (reason === LEFT_ROOM && rejoin) {
                             callingQueue[s] = {status: ""};
                         }
                     }
