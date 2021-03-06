@@ -86,11 +86,27 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         delete callingQueue[socket.id];
 //console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
     });
-    socket.on('leftRoom', function (roomId) {
+    socket.on('leftRoom', function (roomId, isDisconnect, isNotRejoinQueue) {
+        console.log("client call left ROm")
+        if(isDisconnect){
+            socket.to(roomId).emit('buddyLeft', true);
+        }else {
+            socket.to(roomId).emit('buddyLeft');
 
-        socket.to(roomId).emit('buddyLeft');
-        leaveAllUserInRoom(socket.id, LEFT_ROOM);
-        callingQueue[socket.id] = {gender: ""};
+        }
+        if(isNotRejoinQueue){
+            leaveAllUserInRoom(socket.id, LEFT_ROOM, false);
+
+        }else{
+            leaveAllUserInRoom(socket.id, LEFT_ROOM, true);
+
+        }
+        if(!isNotRejoinQueue){
+            callingQueue[socket.id] = {gender: ""};
+
+        }else{
+            console.log("not re join")
+        }
     });
     socket.on('message', function (message) {
         socket.to(message.roomId).emit('message', message);
@@ -141,7 +157,7 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
     socket.on("disconnect", function () {
         delete clientList[socket.id];
         delete callingQueue[socket.id];
-        leaveAllUserInRoom(socket.id, "");
+        leaveAllUserInRoom(socket.id, "", false);
 console.log("Client after disconnect: " + JSON.stringify(clientList));
     })
 socket.on("error", function(){
@@ -161,7 +177,7 @@ console.log("errrrrrrorrr");
         return usersRooms;
     }
 
-    function leaveAllUserInRoom(id, reason) {
+    function leaveAllUserInRoom(id, reason, rejoin) {
         let rooms = io.sockets.adapter.rooms;
 console.log("Rooms:"+JSON.stringify(rooms));
         for (let room in rooms) {
@@ -169,7 +185,6 @@ console.log("Rooms:"+JSON.stringify(rooms));
                 let sockets = rooms[room].sockets;
                 if (id in sockets) {
                     for (let s in sockets) {
-                        io.sockets.connected[s].emit("buddyLeft")
                         io.sockets.connected[s].leave(room);
                         if (reason === LEFT_ROOM) {
                             callingQueue[s] = {status: ""};
