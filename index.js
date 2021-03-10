@@ -26,22 +26,20 @@ router.use('/users', function (request,res, next) {
         next();
 });
 var UserDAO = require('./Services/UserService');
-router.get('/users/login', function (req, res, next) {
-    UserDAO.login("admin","admin",function (result) {
-        if(result.data){
-            res.send("get user:"+JSON.stringify(result));
-        }else{
-            res.send("fail");
-        }
-    });
-});
+var passwordSecurity=require("./password");
+global.Validate = require('./Validate/RequestValidate');
+global.Response = require('./Services/Response');
+global.ApiAuthMiddleware= require('./Middleware/ApiAuthMiddleware')
+let UserRouter = require('./Routers/UserRouter')
+appApi.listen(3001, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+})
+appApi.use( UserRouter);
+
 appApi.use(express.json())
 appApi.use(express.urlencoded({
     extended: true
 }))
-appApi.use( router);
-
-
 
 
 
