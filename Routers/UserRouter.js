@@ -10,7 +10,7 @@ router.get('/user/info',ApiAuthMiddleware, function (req, res) {
     })
 })
 router.post('/user/login',function (req, res) {
-    let validate = Validate.validate(req.body,[{username: Validate.STRING}, {password: Validate.STRING}]);
+   let validate = Validate.validate(req.body,[{username: Validate.STRING}, {password: Validate.STRING}]);
     if(!validate.isValid){
         return  res.json(Response.json(403,validate.error));
     }
@@ -24,7 +24,7 @@ router.post('/user/login',function (req, res) {
                 }
             })
         }else{
-           return   res.json(Response.json(200, 'Login fail'));
+           return   res.json(Response.json(403, 'Login fail'));
         }
     });
 });

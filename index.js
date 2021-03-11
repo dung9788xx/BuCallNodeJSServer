@@ -5,7 +5,7 @@ var nodeStatic = require('node-static');
 var http = require('http');
 var socketIO = require('socket.io');
 const port = process.env.PORT || 3000;
-
+const api_port = 3001;
 var fileServer = new (nodeStatic.Server)();
 var app = http.createServer(function (req, res) {
     fileServer.serve(req, res);
@@ -16,7 +16,7 @@ const appApi = express();
 const router = express.Router();
 var passwordSecurity=require("./password");
 
-appApi.listen(3001, () => {
+appApi.listen(api_port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
 router.get('/', (req, res) => {
@@ -31,15 +31,13 @@ global.Validate = require('./Validate/RequestValidate');
 global.Response = require('./Services/Response');
 global.ApiAuthMiddleware= require('./Middleware/ApiAuthMiddleware')
 let UserRouter = require('./Routers/UserRouter')
-appApi.listen(3001, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-})
-appApi.use( UserRouter);
-
 appApi.use(express.json())
 appApi.use(express.urlencoded({
     extended: true
 }))
+appApi.use( UserRouter);
+
+
 
 
 
