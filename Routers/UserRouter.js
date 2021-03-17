@@ -16,15 +16,17 @@ router.post('/user/login',function (req, res) {
     }
     UserDAO.login(req.body.username,req.body.password,function (result) {
         if(result){
-            UserDAO.generateToken(req.body.username, function (result) {
-                if(result){
-                    return  res.json(Response.json(200, {loginToken:result}));
+            var user_data =result;
+            UserDAO.generateToken(req.body.username, function (token) {
+                if(token){
+                    console.log(user_data);
+                    return  res.json(Response.json(200, {loginToken:token, data:user_data}));
                 }else{
                     return   res.json(Response.json(500, 'Server error'));
                 }
             })
         }else{
-           return   res.json(Response.json(403, 'Login fail'));
+           return   res.json(Response.json(403, 'wrong_login_info'));
         }
     });
 });

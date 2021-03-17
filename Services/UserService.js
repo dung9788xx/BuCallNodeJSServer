@@ -21,7 +21,7 @@ function login(username,password,callback){
     let query = "select * from users where username=? and password=?";
     MySQL.query(query, [username,password],(result)=>{
         if(processResult(result)){
-            callback(true);
+            callback(result.data);
         }else
         callback(false)
     } );
