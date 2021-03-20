@@ -71,8 +71,8 @@ io.sockets.on('connection', function (socket) {
     // convenience function to log server messages on the client
     clientList[socket.id] = {status: ""};
    console.log("Client : " + JSON.stringify(clientList));
-    socket.on('joinCallQueue', function () {
-        callingQueue[socket.id] = {gender: ""};
+    socket.on('joinCallQueue', function (name) {
+        callingQueue[socket.id] = {gender: "", name: name};
 console.log("CallQueue : " + JSON.stringify(callingQueue));
 
         findPater();
@@ -82,7 +82,7 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         delete callingQueue[socket.id];
 //console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
     });
-    socket.on('leftRoom', function (roomId, isDisconnect, isNotRejoinQueue) {
+    socket.on('leftRoom', function (roomId, isDisconnect, isNotRejoinQueue,name) {
         console.log("client call left ROm")
         if(isDisconnect){
             socket.to(roomId).emit('buddyLeft', true);
@@ -94,11 +94,11 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
             leaveAllUserInRoom(socket.id, LEFT_ROOM, false);
 
         }else{
-            leaveAllUserInRoom(socket.id, LEFT_ROOM, true);
+            leaveAllUserInRoom(socket.id, LEFT_ROOM, true, name);
 
         }
         if(!isNotRejoinQueue){
-            callingQueue[socket.id] = {gender: ""};
+            callingQueue[socket.id] = {gender: "", name: name};
 
         }else{
             console.log("not re join")
@@ -120,10 +120,10 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         let roomId = ++totalRoom;
         callingSocket.join("room" + roomId);
         joiningSocket.join("room" + roomId);
-        callingSocket.emit("joined", "room" + roomId,function(t){
+        callingSocket.emit("joined", "room" + roomId, callingQueue[joiningId],function(t){
                 console.log("called join");
 });
-        joiningSocket.emit('joined', "room" + roomId,function(t){
+        joiningSocket.emit('joined', "room" + roomId, callingQueue[callingId],function(t){
                 console.log("called join");
 });
         callingSocket.emit("letStartCall","room"+roomId,1);
@@ -173,7 +173,7 @@ console.log("errrrrrrorrr");
         return usersRooms;
     }
 
-    function leaveAllUserInRoom(id, reason, rejoin) {
+    function leaveAllUserInRoom(id, reason, rejoin, name) {
         let rooms = io.sockets.adapter.rooms;
 console.log("Rooms:"+JSON.stringify(rooms));
         for (let room in rooms) {
@@ -183,7 +183,7 @@ console.log("Rooms:"+JSON.stringify(rooms));
                     for (let s in sockets) {
                         io.sockets.connected[s].leave(room);
                         if (reason === LEFT_ROOM && rejoin) {
-                            callingQueue[s] = {status: ""};
+                            callingQueue[s] = {status: "", name: name};
                         }
                     }
                 }
