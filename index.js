@@ -14,7 +14,7 @@ var app = http.createServer(function (req, res) {
 const express = require('express');
 const appApi = express();
 const router = express.Router();
-var passwordSecurity=require("./password");
+var passwordSecurity = require("./password");
 
 appApi.listen(api_port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
@@ -22,20 +22,20 @@ appApi.listen(api_port, () => {
 router.get('/', (req, res) => {
     res.send('Hello World!')
 })
-router.use('/users', function (request,res, next) {
-        next();
+router.use('/users', function (request, res, next) {
+    next();
 });
 var UserDAO = require('./Services/UserService');
-var passwordSecurity=require("./password");
+var passwordSecurity = require("./password");
 global.Validate = require('./Validate/RequestValidate');
 global.Response = require('./Services/Response');
-global.ApiAuthMiddleware= require('./Middleware/ApiAuthMiddleware')
+global.ApiAuthMiddleware = require('./Middleware/ApiAuthMiddleware')
 let UserRouter = require('./Routers/UserRouter')
 appApi.use(express.json())
 appApi.use(express.urlencoded({
     extended: true
 }))
-appApi.use( UserRouter);
+appApi.use(UserRouter);
 
 
 
@@ -70,10 +70,10 @@ var io = socketIO.listen(app);
 io.sockets.on('connection', function (socket) {
     // convenience function to log server messages on the client
     clientList[socket.id] = {status: ""};
-   console.log("Client : " + JSON.stringify(clientList));
+    console.log("Client : " + JSON.stringify(clientList));
     socket.on('joinCallQueue', function (name) {
         callingQueue[socket.id] = {gender: "", name: name};
-console.log("CallQueue : " + JSON.stringify(callingQueue));
+        console.log("CallQueue : " + JSON.stringify(callingQueue));
 
         findPater();
 //console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
@@ -82,30 +82,40 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         delete callingQueue[socket.id];
 //console.log("sombody left CCall queue : " + JSON.stringify(callingQueue));
     });
-    socket.on('leftRoom', function (roomId, isDisconnect, isNotRejoinQueue,name) {
+    socket.on('leftRoom', function (roomId, isDisconnect, isNotRejoinQueue, name) {
         console.log("client call left ROm")
-        if(isDisconnect){
+        if (isDisconnect) {
             socket.to(roomId).emit('buddyLeft', true);
-        }else {
+        } else {
             socket.to(roomId).emit('buddyLeft');
 
         }
-        if(isNotRejoinQueue){
+        if (isNotRejoinQueue) {
             leaveAllUserInRoom(socket.id, LEFT_ROOM, false);
 
-        }else{
+        } else {
             leaveAllUserInRoom(socket.id, LEFT_ROOM, true, name);
 
         }
-        if(!isNotRejoinQueue){
+        if (!isNotRejoinQueue) {
             callingQueue[socket.id] = {gender: "", name: name};
 
-        }else{
+        } else {
             console.log("not re join")
         }
     });
     socket.on('message', function (message) {
-        socket.to(message.roomId).emit('message', message);
+        if(message.type == "addFriend"){
+
+            UserDAO.addFriend(message.user_id,message.friend_id, function (result) {
+                if(result) {
+                    io.in(message.roomId).emit("addFriendSuccess");
+                }
+            })
+        }else{
+            socket.to(message.roomId).emit('message', message);
+
+        }
     });
 
     function findPater() {
@@ -120,18 +130,18 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         let roomId = ++totalRoom;
         callingSocket.join("room" + roomId);
         joiningSocket.join("room" + roomId);
-        callingSocket.emit("joined", "room" + roomId, callingQueue[joiningId],function(t){
-                console.log("called join");
-});
-        joiningSocket.emit('joined', "room" + roomId, callingQueue[callingId],function(t){
-                console.log("called join");
-});
-        callingSocket.emit("letStartCall","room"+roomId,1);
-       joiningSocket.emit("letStartCall","room"+roomId,0);
+        callingSocket.emit("joined", "room" + roomId, callingQueue[joiningId], function (t) {
+            console.log("called join");
+        });
+        joiningSocket.emit('joined', "room" + roomId, callingQueue[callingId], function (t) {
+            console.log("called join");
+        });
+        callingSocket.emit("letStartCall", "room" + roomId, 1);
+        joiningSocket.emit("letStartCall", "room" + roomId, 0);
 
         delete callingQueue[callingId];
         delete callingQueue[joiningId];
-        console.log("Rooms after merge:"+JSON.stringify(io.sockets.adapter.rooms));
+        console.log("Rooms after merge:" + JSON.stringify(io.sockets.adapter.rooms));
 
         console.log("done merge client");
     }
@@ -147,18 +157,19 @@ console.log("CallQueue : " + JSON.stringify(callingQueue));
         }
     });
     socket.on("disconnecting", function () {
-        console.log("Roomdisconnected:"+getRoomsByUser(socket.id));
-        socket.to(getRoomsByUser(socket.id)).emit('buddyLeft',true);
+        console.log("Roomdisconnected:" + getRoomsByUser(socket.id));
+        socket.to(getRoomsByUser(socket.id)).emit('buddyLeft', true);
     })
     socket.on("disconnect", function () {
         delete clientList[socket.id];
         delete callingQueue[socket.id];
         leaveAllUserInRoom(socket.id, "", false);
-console.log("Client after disconnect: " + JSON.stringify(clientList));
+        console.log("Client after disconnect: " + JSON.stringify(clientList));
     })
-socket.on("error", function(){
-console.log("errrrrrrorrr");
-});
+    socket.on("error", function () {
+        console.log("errrrrrrorrr");
+    });
+
     function getRoomsByUser(id) {
         let usersRooms = [];
         let rooms = io.sockets.adapter.rooms;
@@ -175,7 +186,7 @@ console.log("errrrrrrorrr");
 
     function leaveAllUserInRoom(id, reason, rejoin, name) {
         let rooms = io.sockets.adapter.rooms;
-console.log("Rooms:"+JSON.stringify(rooms));
+        console.log("Rooms:" + JSON.stringify(rooms));
         for (let room in rooms) {
             if (rooms.hasOwnProperty(room)) {
                 let sockets = rooms[room].sockets;
@@ -191,11 +202,13 @@ console.log("Rooms:"+JSON.stringify(rooms));
         }
         totalRoom--;
     }
+
     function getJoiningClient() {
         if (Object.keys(callingQueue).length >= 2) {
             return Object.keys(callingQueue)[Object.keys(callingQueue).length - 1];
         }
     }
+
     function getCallingClient() {
         if (Object.keys(callingQueue).length >= 2) {
             return Object.keys(callingQueue)[0];

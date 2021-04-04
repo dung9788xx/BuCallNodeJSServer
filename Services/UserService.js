@@ -18,6 +18,7 @@ function generateToken(username, callback) {
     } );
 }
 function login(username,password,callback){
+    console.log(username+password+"123")
     let query = "select * from users where username=? and password=?";
     MySQL.query(query, [username,password],(result)=>{
         if(processResult(result)){
@@ -36,8 +37,26 @@ function getUserByToken(token, callback){
             callback(false);
     })
 }
+function addFriend(user_id, friend_id, callback){
+    MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
+       if(!processResult(result)){
+           MySQL.query("insert into friends(user_id, friend_id, created_at) values (?,?,?)",[user_id, friend_id, new Date().toISOString().slice(0, 19).replace('T', ' ')], (result)=>{
+               console.log(result);
+               if(result){
+                   callback(true);
+               }else {
+                   callback(false);
+               }
+           })
+       } else {
+           console.log("bbbb")
+           callback(true);
+       }
+    });
+}
 module.exports = {
     'login': login,
     'generateToken': generateToken,
-    'getUserByToken': getUserByToken
+    'getUserByToken': getUserByToken,
+    'addFriend': addFriend,
 };
