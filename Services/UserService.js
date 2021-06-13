@@ -52,7 +52,20 @@ function getConversations(userId, callback){
             callback(false);
     })
 }
+function getMessages(conversationId, callback) {
+    let query = "select message from messages where cv_id = ?";
+    MySQL.query(query, [conversationId], (result)=>{
+        result = processResult(result)
+        Object.keys(result).map(function(key, index) {
+            result[key] = JSON.parse(result[key].message);
+        });
 
+        if(result){
+            callback(result);
+        }else
+            callback(false);
+    })
+}
 function addFriend(user_id, friend_id, callback){
     MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
        if(!processResult(result)){
@@ -76,4 +89,5 @@ module.exports = {
     'getUserByToken': getUserByToken,
     'addFriend': addFriend,
     'getConversations': getConversations,
+    'getMessages' : getMessages,
 };

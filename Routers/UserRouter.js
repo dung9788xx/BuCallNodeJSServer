@@ -16,6 +16,13 @@ router.get('/user/conversation',ApiAuthMiddleware, function (req, res) {
        }else return res.json(Response.json(500,"server error"))
    })
 })
+router.get('/user/messages',ApiAuthMiddleware, function (req, res) {
+    UserDAO.getMessages(req.query.conversation_id, function (result) {
+        if(result){
+            return  res.json( Response.json(200,result))
+        }else return res.json(Response.json(500,"server error"))
+    })
+})
 router.post('/user/login',function (req, res) {
    let validate = Validate.validate(req.body,[{username: Validate.STRING}, {password: Validate.STRING}]);
     if(!validate.isValid){
