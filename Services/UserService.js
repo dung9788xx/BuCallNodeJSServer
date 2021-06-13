@@ -2,7 +2,7 @@ const MySQL= require("./MysqlConnection");
 let uuid = require('uuid');
 function processResult(result) {
     if(Object.keys(result).length>0 && !result.error && JSON.parse(result.data).length>0){
-        return result.data;
+        return JSON.parse(result.data);
     }
     return false;
 }
@@ -18,11 +18,11 @@ function generateToken(username, callback) {
     } );
 }
 function login(username,password,callback){
-    console.log(username+password+"123")
     let query = "select * from users where username=? and password=?";
     MySQL.query(query, [username,password],(result)=>{
-        if(processResult(result)){
-            callback(result.data);
+        result = processResult(result);
+        if(result){
+            callback(result);
         }else
         callback(false)
     } );
@@ -37,6 +37,22 @@ function getUserByToken(token, callback){
             callback(false);
     })
 }
+
+function getConversations(userId, callback){
+    let query = "select users.id,users.name,cv.id as cv_id " +
+        "from users," +
+        "(select id,partner_user_id as user_id from conversations where user_id =?" +
+        " union" + " select id, user_id as user_id from conversations where partner_user_id=?) as cv" +
+        " where cv.user_id=users.id ";
+    MySQL.query(query, [userId,userId], (result)=>{
+        result = processResult(result)
+        if(result){
+            callback(result);
+        }else
+            callback(false);
+    })
+}
+
 function addFriend(user_id, friend_id, callback){
     MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
        if(!processResult(result)){
@@ -59,4 +75,5 @@ module.exports = {
     'generateToken': generateToken,
     'getUserByToken': getUserByToken,
     'addFriend': addFriend,
+    'getConversations': getConversations,
 };

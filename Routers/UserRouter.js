@@ -9,6 +9,13 @@ router.get('/user/info',ApiAuthMiddleware, function (req, res) {
         }else return res.json(Response.json(500,"server error"))
     })
 })
+router.get('/user/conversation',ApiAuthMiddleware, function (req, res) {
+   UserDAO.getConversations(global.user_id, function (result) {
+       if(result){
+           return  res.json( Response.json(200,result))
+       }else return res.json(Response.json(500,"server error"))
+   })
+})
 router.post('/user/login',function (req, res) {
    let validate = Validate.validate(req.body,[{username: Validate.STRING}, {password: Validate.STRING}]);
     if(!validate.isValid){
@@ -19,7 +26,6 @@ router.post('/user/login',function (req, res) {
             var user_data =result;
             UserDAO.generateToken(req.body.username, function (token) {
                 if(token){
-                    console.log(user_data);
                     return  res.json(Response.json(200, {loginToken:token, data:user_data}));
                 }else{
                     return   res.json(Response.json(500, 'Server error'));
@@ -29,6 +35,7 @@ router.post('/user/login',function (req, res) {
            return   res.json(Response.json(403, 'wrong_login_info'));
         }
     });
+
 });
 router.get('/', (req, res) => {
     res.send('Hello World!')

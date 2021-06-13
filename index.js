@@ -31,6 +31,11 @@ global.Validate = require('./Validate/RequestValidate');
 global.Response = require('./Services/Response');
 global.ApiAuthMiddleware = require('./Middleware/ApiAuthMiddleware')
 let UserRouter = require('./Routers/UserRouter')
+
+
+
+
+
 appApi.use(express.json())
 appApi.use(express.urlencoded({
     extended: true
