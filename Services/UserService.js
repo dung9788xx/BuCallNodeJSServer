@@ -70,7 +70,6 @@ function addFriend(user_id, friend_id, callback){
     MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
        if(!processResult(result)){
            MySQL.query("insert into friends(user_id, friend_id, created_at) values (?,?,?)",[user_id, friend_id, new Date().toISOString().slice(0, 19).replace('T', ' ')], (result)=>{
-               console.log(result);
                if(result){
                    callback(true);
                }else {
@@ -78,7 +77,6 @@ function addFriend(user_id, friend_id, callback){
                }
            })
        } else {
-           console.log("bbbb")
            callback(true);
        }
     });

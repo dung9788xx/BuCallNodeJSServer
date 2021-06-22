@@ -73,12 +73,38 @@ var callingQueue = {};
 var totalRoom = 0;
 var io = socketIO.listen(app);
 io.sockets.on('connection', function (socket) {
+
+    socket.on('joinMessaging', function (userId) {
+        console.log(           socket.id
+        )
+    });
+    socket.on('newMessage', function ( data, callback) {
+        console.log(data.userId);
+        console.log(data.conversationId);
+        console.log(data.message);
+        console.log( data.message[0]._id)
+        callback(data.message[0]._id);
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // convenience function to log server messages on the client
     clientList[socket.id] = {status: ""};
-    console.log("Client : " + JSON.stringify(clientList));
+    // console.log("Client : " + JSON.stringify(clientList));
     socket.on('joinCallQueue', function (name) {
         callingQueue[socket.id] = {gender: "", name: name};
-        console.log("CallQueue : " + JSON.stringify(callingQueue));
+        // console.log("CallQueue : " + JSON.stringify(callingQueue));
 
         findPater();
 //console.log("Rooms:"+JSON.stringify(io.sockets.adapter.rooms));
@@ -110,7 +136,7 @@ io.sockets.on('connection', function (socket) {
         }
     });
     socket.on('message', function (message) {
-        if(message.type == "addFriend"){
+        if(message.type === "addFriend"){
 
             UserDAO.addFriend(message.user_id,message.friend_id, function (result) {
                 if(result) {
