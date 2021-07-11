@@ -53,7 +53,7 @@ function getConversations(userId, callback){
     })
 }
 function getMessages(conversationId, callback) {
-    let query = "select message from messages where cv_id = ?";
+    let query = "select message from messages where cv_id = ? order by created_at DESC";
     MySQL.query(query, [conversationId], (result)=>{
         result = processResult(result)
         Object.keys(result).map(function(key, index) {
@@ -81,6 +81,15 @@ function addFriend(user_id, friend_id, callback){
        }
     });
 }
+function addMessage(cvId, message, callback) {
+    let query = "insert into messages(cv_id, message, created_at) values (?,?, now())";
+    MySQL.query(query, [cvId, message], (result)=>{
+        if(result){
+            callback(true);
+        }else
+            callback(false);
+    })
+}
 module.exports = {
     'login': login,
     'generateToken': generateToken,
@@ -88,4 +97,5 @@ module.exports = {
     'addFriend': addFriend,
     'getConversations': getConversations,
     'getMessages' : getMessages,
+    'addMessage' : addMessage
 };

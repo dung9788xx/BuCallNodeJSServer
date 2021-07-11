@@ -79,11 +79,16 @@ io.sockets.on('connection', function (socket) {
         )
     });
     socket.on('newMessage', function ( data, callback) {
-        console.log(data.userId);
-        console.log(data.conversationId);
-        console.log(data.message);
-        console.log( data.message[0]._id)
-        callback(data.message[0]._id);
+        let message = data.message[0];
+        message.sending=false;
+        message.sent=true;
+
+        UserDAO.addMessage(data.conversationId,JSON.stringify(data.message[0]), function (result) {
+            if(result) {
+                callback(data.message[0]._id);
+            }
+        })
+
     });
 
 
