@@ -17,7 +17,7 @@ router.get('/user/conversation',ApiAuthMiddleware, function (req, res) {
    })
 })
 router.get('/user/messages',ApiAuthMiddleware, function (req, res) {
-    UserDAO.getMessages(req.query.conversation_id, function (result) {
+    UserDAO.getMessages(req.query.conversation_id,req.query.page || 1, function (result) {
         if(result){
             return  res.json( Response.json(200,result))
         }else return res.json(Response.json(500,"server error"))

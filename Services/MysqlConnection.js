@@ -15,6 +15,13 @@ con.connect(function(err) {
         return callback({data: JSON.stringify(result)});
     });
 }
+// function query1(query,params,callback) {
+//     return new Promise((resole, reject) => {
+//         con.query(query, params,(err, result)=> {
+//             err ? resole(null) : resole(result);
+//         });
+//     });
+// }
 function update(query,params,callback) {
     con.query(query, params,(err, result)=> {
         if (err) return  callback(false);

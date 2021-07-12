@@ -1,7 +1,7 @@
 const MySQL= require("./MysqlConnection");
 let uuid = require('uuid');
 function processResult(result) {
-    if(Object.keys(result).length>0 && !result.error && JSON.parse(result.data).length>0){
+    if(result.hasOwnProperty('data') && !result.error ){
         return JSON.parse(result.data);
     }
     return false;
@@ -52,9 +52,11 @@ function getConversations(userId, callback){
             callback(false);
     })
 }
-function getMessages(conversationId, callback) {
-    let query = "select message from messages where cv_id = ? order by created_at DESC";
-    MySQL.query(query, [conversationId], (result)=>{
+function getMessages(conversationId,page, callback) {
+    let offset = (page-1)*20
+    let query = "select message from messages where cv_id = ? order by created_at DESC LIMIT 20 OFFSET ? ";
+    MySQL.query(query, [conversationId, offset], (result)=>{
+
         result = processResult(result)
         Object.keys(result).map(function(key, index) {
             result[key] = JSON.parse(result[key].message);
@@ -68,17 +70,15 @@ function getMessages(conversationId, callback) {
 }
 function addFriend(user_id, friend_id, callback){
     MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
-       if(!processResult(result)){
+       if(processResult(result))  callback(true);
            MySQL.query("insert into friends(user_id, friend_id, created_at) values (?,?,?)",[user_id, friend_id, new Date().toISOString().slice(0, 19).replace('T', ' ')], (result)=>{
-               if(result){
-                   callback(true);
-               }else {
-                   callback(false);
-               }
+               if (!result) callback(false)
+                   MySQL.query("insert into conversations(user_id,partner_user_id,created_at,updated_at) value(?,?, now(), now())", [user_id,friend_id], (result) => {
+                       result ? callback(true) : callback(false)
+
+                   })
+
            })
-       } else {
-           callback(true);
-       }
     });
 }
 function addMessage(cvId, message, callback) {
