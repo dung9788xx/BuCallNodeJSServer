@@ -82,10 +82,24 @@ function addFriend(user_id, friend_id, callback){
     });
 }
 function addMessage(cvId, message, callback) {
+    let jsonMessage = JSON.stringify(message)
     let query = "insert into messages(cv_id, message, created_at) values (?,?, now())";
-    MySQL.query(query, [cvId, message], (result)=>{
+    MySQL.query(query, [cvId, jsonMessage], (result)=>{
         if(result){
-            callback(true);
+            let updateLastMessage = "update conversations set last_message = ? where id = ?";
+            let  newMessage = {
+                text: message.text,
+                createdAt: message.createdAt
+            }
+            MySQL.query(updateLastMessage, [JSON.stringify(newMessage),cvId], (result) =>{
+                console.log(result)
+                if(result) {
+                    callback(true);
+
+                } else {
+                    callback(false)
+                }
+            })
         }else
             callback(false);
     })

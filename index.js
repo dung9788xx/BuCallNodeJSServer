@@ -83,7 +83,7 @@ io.sockets.on('connection', function (socket) {
         message.sending=false;
         message.sent=true;
 
-        UserDAO.addMessage(data.conversationId,JSON.stringify(data.message[0]), function (result) {
+        UserDAO.addMessage(data.conversationId,data.message[0], function (result) {
             if(result) {
                 callback(data.message[0]._id);
             }
