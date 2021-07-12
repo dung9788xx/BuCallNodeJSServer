@@ -39,11 +39,11 @@ function getUserByToken(token, callback){
 }
 
 function getConversations(userId, callback){
-    let query = "select users.id,users.name,cv.id as cv_id " +
+    let query = "select users.id,users.name,cv.id as cv_id,cv.last_message as last_message, cv.updated_at as updated_at_message " +
         "from users," +
-        "(select id,partner_user_id as user_id from conversations where user_id =?" +
-        " union" + " select id, user_id as user_id from conversations where partner_user_id=?) as cv" +
-        " where cv.user_id=users.id ";
+        "(select id,partner_user_id as user_id,last_message,updated_at from conversations where user_id =?" +
+        " union" + " select id, user_id as user_id,last_message,updated_at from conversations where partner_user_id=?) as cv" +
+        " where cv.user_id=users.id  order by updated_at_message DESC";
     MySQL.query(query, [userId,userId], (result)=>{
         result = processResult(result)
         if(result){
@@ -82,10 +82,23 @@ function addFriend(user_id, friend_id, callback){
     });
 }
 function addMessage(cvId, message, callback) {
+    let jsonMessage = JSON.stringify(message)
     let query = "insert into messages(cv_id, message, created_at) values (?,?, now())";
-    MySQL.query(query, [cvId, message], (result)=>{
+    MySQL.query(query, [cvId, jsonMessage], (result)=>{
         if(result){
-            callback(true);
+            let updateLastMessage = "update conversations set last_message = ?, updated_at =now() where id = ?";
+            let  newMessage = {
+                text: message.text,
+                createdAt: message.createdAt
+            }
+            MySQL.query(updateLastMessage, [JSON.stringify(newMessage),cvId], (result) =>{
+                if(result) {
+                    callback(true);
+
+                } else {
+                    callback(false)
+                }
+            })
         }else
             callback(false);
     })
