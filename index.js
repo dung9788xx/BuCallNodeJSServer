@@ -71,14 +71,24 @@ appApi.use(UserRouter);
 var clientList = {};
 var callingQueue = {};
 var totalRoom = 0;
-var io = socketIO.listen(app);
+var io = socketIO.listen(app)
+var clientMessaging = {};
 io.sockets.on('connection', function (socket) {
 
-    socket.on('joinMessaging', function (userId) {
-        console.log(           socket.id
-        )
+    socket.on('joinMessaging', function (userId, callback) {
+        clientMessaging[userId] = socket.id
+        callback(true);
     });
     socket.on('newMessage', function ( data, callback) {
+        console.log(clientMessaging);
+        let receiveSocket = io.sockets.connected[clientMessaging[data.partnerUserId]];
+        if(typeof receiveSocket != 'undefined'){
+            receiveSocket.emit('hasNewMessage')
+            console.log('emited')
+        } else {
+            console.log('errror')
+            console.log(data.partnerUserId)
+        }
         let message = data.message[0];
         message.sending=false;
         message.sent=true;

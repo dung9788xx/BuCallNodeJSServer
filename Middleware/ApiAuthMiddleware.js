@@ -6,8 +6,6 @@ const authMiddleware = function (request,res, next) {
     }
 
     MySQL.query("select * from users where token = ?",[request.header("Authorization")], function (result) {
-        console.log(result)
-        console.log(request.header("Authorization"))
         if(MySQL.processResult(result)){
             global.user_id = JSON.parse(MySQL.processResult(result))[0].id;
             next();
