@@ -100,7 +100,8 @@ io.sockets.on('connection', function (socket) {
         })
 
     });
-
+//TODO
+    //delete user in ClientMessaging when disconnect
 
 
 

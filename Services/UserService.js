@@ -70,9 +70,19 @@ function getMessages(conversationId,page, callback) {
 }
 function addFriend(user_id, friend_id, callback){
     MySQL.query("select * from friends where (user_id=? and friend_id=?) or ((user_id=? and friend_id=?)) ",[user_id, friend_id,friend_id,user_id ], (result)=>{
-       if(processResult(result))  callback(true);
-           MySQL.query("insert into friends(user_id, friend_id, created_at) values (?,?,?)",[user_id, friend_id, new Date().toISOString().slice(0, 19).replace('T', ' ')], (result)=>{
-               if (!result) callback(false)
+        result = processResult(result)
+       if(result.length > 0) {
+           console.log(result)
+           console.log('has friend')
+           callback(true);
+           return ;
+       }
+           MySQL.query("insert into friends(user_id, friend_id, created_at) values (?,?, now())",[user_id, friend_id], (result)=>{
+               if (!result) {
+                   callback(false);
+                   console.log('fail inster')
+                   return ;
+               }
                    MySQL.query("insert into conversations(user_id,partner_user_id,created_at,updated_at) value(?,?, now(), now())", [user_id,friend_id], (result) => {
                        result ? callback(true) : callback(false)
 
