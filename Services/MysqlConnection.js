@@ -25,7 +25,7 @@ con.connect(function(err) {
 function update(query,params,callback) {
     con.query(query, params,(err, result)=> {
         if (err) return  callback(false);
-        return result.changedRows>0 ? callback(true) : callback(false);
+        return result.changedRows>0 || result.affectedRows>0 ? callback(true) : callback(false);
     });
 
 }

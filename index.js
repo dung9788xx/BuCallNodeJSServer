@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config();
 const LEFT_ROOM = "LEFT_ROM";
 var os = require('os');
 var nodeStatic = require('node-static');

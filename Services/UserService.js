@@ -6,6 +6,16 @@ function processResult(result) {
     }
     return false;
 }
+function processCheckResult(result) {
+    if(result.hasOwnProperty('data') && !result.error ){
+        data = JSON.parse(result.data);
+        if( Object.keys(data).length ==0) {
+            return  false;
+        }
+        return data;
+    }
+    return false;
+}
 function generateToken(username, callback) {
     let token = uuid.v1()+''+uuid.v4();
     MySQL.update('update users set token=? where username=?', [token,username
@@ -13,6 +23,15 @@ function generateToken(username, callback) {
         if(result){
 
             callback(token);
+        }else
+            callback(false)
+    } );
+}
+function updateToken(username,token, callback) {
+    MySQL.update("update users set token=? where username=?", [token,username
+    ],(result)=>{
+        if(result){
+            callback(result);
         }else
             callback(false)
     } );
@@ -27,9 +46,39 @@ function login(username,password,callback){
         callback(false)
     } );
 }
+
+function checkLoginWithGoogle(username, callback) {
+    let query = "select * from users where username=?";
+    MySQL.query(query, [username], (result) => {
+        result = processCheckResult(result);
+        if (result) {
+            callback(result)
+        } else callback(false)
+    });
+}
+function createUserWithGoogle(username,name,token,role,photo,status,callback){
+    let query = "insert into users(username,name,token,role,photo,status,created_at) values (?,?,?,1,?,1, now())";
+    MySQL.query(query, [username,name,token,photo], (result) => {
+        if (result) {
+            callback(true)
+        } else {
+            callback(false)
+        }
+    });
+}
 function getUserByToken(token, callback){
     let query = "select id,username from users where token = ? ";
     MySQL.query(query, [token], (result)=>{
+        result = processResult(result)
+        if(result){
+            callback(result);
+        }else
+            callback(false);
+    })
+}
+function getUserByUsername(username, callback){
+    let query = "select * from users where username = ? ";
+    MySQL.query(query, [username], (result)=>{
         result = processResult(result)
         if(result){
             callback(result);
@@ -116,9 +165,13 @@ function addMessage(cvId, message, callback) {
 module.exports = {
     'login': login,
     'generateToken': generateToken,
+    'updateToken': updateToken,
     'getUserByToken': getUserByToken,
+    'getUserByUsername': getUserByUsername,
     'addFriend': addFriend,
     'getConversations': getConversations,
     'getMessages' : getMessages,
-    'addMessage' : addMessage
+    'addMessage' : addMessage,
+    'checkLoginWithGoogle': checkLoginWithGoogle,
+    'createUserWithGoogle': createUserWithGoogle,
 };
