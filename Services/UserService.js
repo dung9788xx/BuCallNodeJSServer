@@ -67,7 +67,7 @@ function createUserWithGoogle(username,name,token,role,photo,status,callback){
     });
 }
 function getUserByToken(token, callback){
-    let query = "select id,username from users where token = ? ";
+    let query = "select * from users where token = ? ";
     MySQL.query(query, [token], (result)=>{
         result = processResult(result)
         if(result){
@@ -88,7 +88,7 @@ function getUserByUsername(username, callback){
 }
 
 function getConversations(userId, callback){
-    let query = "select cv.user_id,users.name,cv.id as cv_id,cv.last_message as last_message, cv.updated_at as updated_at_message " +
+    let query = "select cv.user_id,users.name,users.photo,cv.id as cv_id,cv.last_message as last_message, cv.updated_at as updated_at_message " +
         "from users," +
         "(select id,partner_user_id as user_id,last_message,updated_at from conversations where user_id =?" +
         " union" + " select id, user_id as user_id,last_message,updated_at from conversations where partner_user_id=?) as cv" +

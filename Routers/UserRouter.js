@@ -84,7 +84,15 @@ router.post('/user/login',function (req, res) {
 
 
 });
+router.get('/user/me',ApiAuthMiddleware, function (req, res) {
+  UserDAO.getUserByToken(req.header("Authorization"), function (result) {
+    if(result){
+      return  res.json( Response.json(200,result))
+    }else return res.json(Response.json(500,"server error"))
+  })
+})
 router.get('/', (req, res) => {
     res.send('Hello World!')
-})
+});
+
 module.exports = router
